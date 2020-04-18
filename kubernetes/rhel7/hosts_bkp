@@ -1,0 +1,7 @@
+[masters]
+master ansible_host=192.168.122.200 ansible_user=root ansible_port=22 ansible_connection=ssh ansible_ssh_pass=root@123
+
+[workers]
+
+worker0 ansible_host=192.168.122.201 ansible_user=root ansible_port=22 ansible_connection=ssh ansible_ssh_pass=root@123
+worker1 ansible_host=192.168.122.202 ansible_user=root ansible_port=22 ansible_connection=ssh ansible_ssh_pass=root@123

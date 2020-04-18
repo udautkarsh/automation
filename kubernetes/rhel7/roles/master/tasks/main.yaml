@@ -1,4 +1,4 @@
-- name: copying local.repo files on all nodes
+- name: copying local.repo files
   copy:
     src: ./configs/local.repo
     dest: /etc/yum.repos.d/
@@ -16,15 +16,19 @@
       - 6443/tcp
       - 2379-2380/tcp
       - 10250-20252/tcp
-      - 10255/tcp  
 
 - name: adjust modprobe br_netfilter
   command: modprobe br_netfilter
 
-- name: disable swap memory
+- name: disable swap memory (1/2)
   command: swapoff -a
 
-
+- name: Disable SWAP in fstab (2/2)
+  replace:
+    path: /etc/fstab
+    regexp: '^([^#].*?\sswap\s*swap\s+.*)$'
+    replace: '# \1'
+ 
 - name: adjuts net bridge nf call iptables
   command: echo '1' > /proc/sys/net/bridge/bridge-nf-call-iptables
 
@@ -49,27 +53,21 @@
     policy: targeted
     state: permissive
 
-- name: reading node details 
-  command: 'kubectl get nodes'
+- name: Check if master cluster initialization has already been done
+  stat:
+    path: /var/lib/kubelet/config.yaml
   register: result
-  ignore_errors: True
 
 - name: Initialize master with kubeadm init
   command: kubeadm init
-  when: result.rc == 1 
+  when: not result.stat.exists 
 
-- name: Print node join command
-  command: kubeadm token create --print-join-command
-  register: node_join
-
-- debug: msg={{node_join.stdout.lines}}
-
-- name: Remove .kube direcoty if present
+- name: Remove .kube directory if present
   file:
     path: $HOME/.kube
     state: absent
 
-- name: making .kube dir in home
+- name: making .kube dir
   file: 
     path: $HOME/.kube
     state: directory
@@ -78,11 +76,35 @@
 - name: copying credentials file in .kube
   command: cp -in /etc/kubernetes/admin.conf $HOME/.kube/config
 
+- name: Adjusting owenership
+  shell: chown $(id -u):$(id -g) $HOME/.kube/config
+  args:
+    warn: no
+
 - name: restore file(s) default SELinux security contexts
   command: restorecon -RF $HOME/.kube/config
  
 - name: get status of cluster
-  command: kubectl get nodes
+  command: "kubectl get nodes"
   register: cluster_status
 
-- debug: msg={{cluster_status.stdout}}
+- debug: msg={{cluster_status.stdout_lines}}
+
+- name: waiting for pods to comeup
+  pause:
+    minutes: 1
+ 
+- name: Cluster pods status
+  command: "kubectl get pods --all-namespaces"
+  register: pods
+
+- debug: msg={{pods.stdout_lines}}
+
+- name: Installing a Pod network add-on
+  shell: kubectl apply -f https://cloud.weave.works/k8s/net?k8s-version=$(kubectl version | base64 | tr -d '\n')
+
+- name: Cluster pods status
+  command: "kubectl get pods --all-namespaces"
+  register: pods
+
+- debug: msg={{pods.stdout_lines}}

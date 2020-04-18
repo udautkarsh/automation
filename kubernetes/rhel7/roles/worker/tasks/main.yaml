@@ -1,0 +1,52 @@
+- name: copying local.repo files
+  copy:
+    src: ./configs/local.repo
+    dest: /etc/yum.repos.d/
+    owner: root
+    group: root
+    mode: 0755
+
+- name: Open up firewall ports
+  firewalld:
+      permanent: yes
+      immediate: yes
+      state: enabled
+      port: "{{ item }}"
+  with_items:
+      - 30000-32767/tcp
+      - 10250/tcp
+
+- name: disable swap memory (1/2)
+  command: swapoff -a
+
+- name: Disable SWAP in fstab (2/2)
+  replace:
+    path: /etc/fstab
+    regexp: '^([^#].*?\sswap\s*swap\s+.*)$'
+    replace: '# \1'
+
+- name: Put SELinux in permissive mode, logging actions that would be blocked.
+  selinux:
+    policy: targeted
+    state: permissive
+
+- name: Install kubeadm and docker
+  yum:
+      name:
+        - kubeadm
+        - docker
+      state: present
+
+- name: Starting services
+  service:
+      name: "{{ item }}"
+      enabled: yes
+      state: started
+  with_items:
+      - kubelet
+      - docker
+
+- debug: msg={{hostvars['DUMMY']['nodejn'][0]}}
+
+- name: joining to the master
+  shell: "{{hostvars['DUMMY']['nodejn'][0]}}" 
