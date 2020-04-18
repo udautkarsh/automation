@@ -1,0 +1,17 @@
+- name: Generating ssh keys  
+  openssh_keypair:
+    path: ~/.ssh/id_rsa
+    type: rsa
+    size: 2048
+    state: present
+    force: no
+
+- name: deleting known-hosts file
+  file: 
+    path: ~/.ssh/known_hosts
+    state: absent
+
+- name: Copying public keys to nodes
+  command: sshpass -f password.txt ssh-copy-id -o StrictHostKeyChecking=no root@"{{item}}"
+  with_items:
+  -   "{{ groups['all'] }}"

@@ -1,0 +1,7 @@
+[masters]
+192.168.122.200 ansible_user=root ansible_become=true ansible_become_user=root ansible_become_pass=root@123 
+
+[workers]
+
+192.168.122.201 ansible_user=root 
+192.168.122.202 ansible_user=root

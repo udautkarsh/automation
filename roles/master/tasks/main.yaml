@@ -1,0 +1,88 @@
+- name: copying local.repo files on all nodes
+  copy:
+    src: ./configs/local.repo
+    dest: /etc/yum.repos.d/
+    owner: root
+    group: root
+    mode: 0755
+
+- name: Open up firewall ports
+  firewalld:
+      permanent: yes
+      immediate: yes
+      state: enabled
+      port: "{{ item }}"
+  with_items:
+      - 6443/tcp
+      - 2379-2380/tcp
+      - 10250-20252/tcp
+      - 10255/tcp  
+
+- name: adjust modprobe br_netfilter
+  command: modprobe br_netfilter
+
+- name: disable swap memory
+  command: swapoff -a
+
+
+- name: adjuts net bridge nf call iptables
+  command: echo '1' > /proc/sys/net/bridge/bridge-nf-call-iptables
+
+- name: Install kubeadm and docker
+  yum:
+      name:
+        - kubeadm
+        - docker
+      state: present
+
+- name: Starting services
+  service:
+      name: "{{ item }}"
+      enabled: yes
+      state: started
+  with_items:
+      - kubelet
+      - docker
+
+- name: Put SELinux in permissive mode, logging actions that would be blocked.
+  selinux:
+    policy: targeted
+    state: permissive
+
+- name: reading node details 
+  command: 'kubectl get nodes'
+  register: result
+  ignore_errors: True
+
+- name: Initialize master with kubeadm init
+  command: kubeadm init
+  when: result.rc == 1 
+
+- name: Print node join command
+  command: kubeadm token create --print-join-command
+  register: node_join
+
+- debug: msg={{node_join.stdout.lines}}
+
+- name: Remove .kube direcoty if present
+  file:
+    path: $HOME/.kube
+    state: absent
+
+- name: making .kube dir in home
+  file: 
+    path: $HOME/.kube
+    state: directory
+    force: yes
+
+- name: copying credentials file in .kube
+  command: cp -in /etc/kubernetes/admin.conf $HOME/.kube/config
+
+- name: restore file(s) default SELinux security contexts
+  command: restorecon -RF $HOME/.kube/config
+ 
+- name: get status of cluster
+  command: kubectl get nodes
+  register: cluster_status
+
+- debug: msg={{cluster_status.stdout}}
