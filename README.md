@@ -1,4 +1,4 @@
-=====>>> How to deploy multinode Kubernetes cluster on centos using kubeadmin <<<=====
+How to deploy multinode Kubernetes cluster on centos using kubeadmin and ansible automation
 
 1) Pre-Requisites
 
