@@ -1,0 +1,1 @@
+virt-install --name kube-master --memory=2048 --vcpus=2 --location /var/lib/libvirt/images/centos.iso --disk size=30 --noautoconsole --network bridge=virbr0 --graphics=vnc --hvm --os-variant=rhel7.0 --initrd-inject=./configs/master-ks.cfg --extra-args "ks=file:/master-ks.cfg"

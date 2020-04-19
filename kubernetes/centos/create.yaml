@@ -1,0 +1,46 @@
+- hosts: localhost
+  gather_facts: false
+  ignore_errors: true  
+  roles:
+    -   deploy-vm  
+
+- hosts: localhost
+  gather_facts: false
+  roles:
+    -   prepare  
+
+- hosts: masters
+  gather_facts: false
+  roles:
+    -   master  
+
+- hosts: masters
+  gather_facts: false
+  tasks:
+    - command: kubeadm token create --print-join-command
+      register: node_join
+
+    - name: Store node join command
+      add_host:
+        name: "DUMMY"
+        nodejn: "{{node_join.stdout_lines}}"      
+
+- hosts: localhost
+  gather_facts: false
+  tasks:
+    - debug: msg={{hostvars['DUMMY']['nodejn']}}
+
+- hosts: workers
+  gather_facts: false
+  roles:
+    -   worker
+
+- hosts: masters
+  gather_facts: false
+  tasks:
+    - shell: "kubectl get nodes"
+      register: cluster_status
+
+    - name: "Cluster status after worker nodes are added, note ==> worker nodes might take a while to come to Ready state"
+      debug: msg={{cluster_status.stdout_lines}}
+
