@@ -38,9 +38,6 @@
         
         cd automation/kubernetes/centos
         ansible-playbook -i hosts create.yaml
-        
-5) Successful command logs:
-   
-   root@bastion:/home/uday/kubernetes/kubernetes/centos# ansible-playbook -i hosts create.yaml 
+
    
       
