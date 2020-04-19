@@ -20,7 +20,7 @@
   
 - name: waiting for worker-0 node to deploy
   pause: 
-    minutes: 2
+    minutes: 5
   when: '"kube-worker0" not in all_vms.stdout_lines'
 
 - name: deploying kube worker-1  node
@@ -39,9 +39,8 @@
 - debug: 
     msg: All running VMs are ==> {{all_vms.stdout_lines}}
 
-- name: starting nodes if not strted already
+- name: starting nodes if not started already
   command: virsh start {{ item }}
-  ignore_errors: true
   with_items:
     - kube-master
     - kube-worker0
@@ -50,9 +49,6 @@
 
 - name: waiting for nodes to start
   pause: 
-    sleep: 20
-  when:
-    - '"kube-master0" not in all_vms.stdout_lines'
-    - '"kube-worker0" not in all_vms.stdout_lines'
-    - '"kube-worker1" not in all_vms.stdout_lines'
+    seconds: 20
+  when: ('"kube-master0" not in all_vms.stdout_lines') and ('"kube-worker0" not in all_vms.stdout_lines') and ('"kube-worker1" not in all_vms.stdout_lines')
 
