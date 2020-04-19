@@ -39,5 +39,16 @@
         cd automation/kubernetes/centos
         ansible-playbook -i hosts create.yaml
 
-   
+5) Execution console logs:
+
+        root@bastion:/home/uday/kubernetes/kubernetes/centos# ansible-playbook -i hosts create.yaml
+        PLAY [localhost] **************************************************************************************************************************************************************************************************
+        TASK [deploy-vm : Check if nodes are deployed] ********************************************************************************************************************************************************************
+        changed: [localhost]
+        TASK [deploy-vm : debug] ******************************************************************************************************************************************************************************************
+        ok: [localhost] => {
+        "msg": "All VMs are ==> [u'kube-master', u'kube-worker1', u'docker', u'helper', u'kube-rh-master', u'kube-rh-worker0', u'kube-rh-worker1', u'kube-worker0', u'node-bootstrap', u'node-master-0', u'node-master-1', u'node-master-2', u'node-worker-0', u'node-worker-1', u'node-worker-2', u'ocp-infra', u'ocp-lb-ext', u'ocp-lb-int', u'ocp-registry']"
+}
+
+
       
