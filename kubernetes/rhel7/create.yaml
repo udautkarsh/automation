@@ -34,3 +34,13 @@
   gather_facts: false
   roles:
     -   worker
+
+- hosts: masters
+  gather_facts: false
+  tasks:
+    - shell: "kubectl get nodes"
+      register: cluster_status
+
+    - name: "Cluster status after worker nodes are added, note ==> worker nodes might take a while to come to Ready state"
+      debug: msg={{cluster_status.stdout_lines}}
+

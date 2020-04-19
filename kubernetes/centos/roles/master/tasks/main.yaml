@@ -9,6 +9,9 @@
 - name: adjust modprobe br_netfilter
   command: modprobe br_netfilter
 
+- name: adjuts net bridge nf call iptables
+  shell: "echo '1' > /proc/sys/net/bridge/bridge-nf-call-iptables"
+
 - name: Letting iptables see bridged traffic
   copy:
     src: ./configs/k8s.conf
@@ -40,9 +43,6 @@
     regexp: '^([^#].*?\sswap\s*swap\s+.*)$'
     replace: '# \1'
  
-- name: adjuts net bridge nf call iptables
-  shell: "echo '1' > /proc/sys/net/bridge/bridge-nf-call-iptables"
-
 - name: Install kubeadm and docker
   yum:
       name:
