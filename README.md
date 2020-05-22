@@ -11,7 +11,7 @@ How to deploy multinode Kubernetes cluster on centos using kubeadmin and ansible
     ===> Download minimal centos 7.x and rename it to centos.iso.Place centos.iso in /var/lib/libvirt/images/ directory on
          management node. Optionally, below command can be used: 
     
-         wget -O /var/lib/libvirt/images/centos.iso --continue http://mirror.vanehost.com/centos/7.7.1908/isos/x86_64/CentOS-7-x86_64-Minimal-1908.iso
+         wget -O /var/lib/libvirt/images/centos.iso --continue http://mirrors.oit.uci.edu/centos/7.7.1908/isos/x86_64/CentOS-7-x86_64-Minimal-1908.iso
 
 
 3) Cluster node sizing:
