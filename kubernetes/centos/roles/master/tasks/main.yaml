@@ -42,7 +42,90 @@
     path: /etc/fstab
     regexp: '^([^#].*?\sswap\s*swap\s+.*)$'
     replace: '# \1'
- 
+
+- name: Create a systemd drop-in directory for the docker service
+  file:
+    path: /etc/systemd/system/docker.service.d
+    owner: root
+    group: root
+    mode: 0755
+    recurse: yes
+    state: directory
+  when: use_proxy == 'yes'
+
+- name: Copy proxy files for docker daemon (1/2)
+  template:
+    src: http-proxy.j2
+    dest: /etc/systemd/system/docker.service.d/http-proxy.conf
+    mode: 0755
+  when: use_proxy == 'yes'
+
+- name: Copy proxy files for docker daemon (2/2)
+  template:
+    src: https-proxy.j2
+    dest: /etc/systemd/system/docker.service.d/https-proxy.conf
+    mode: 0755
+  when: use_proxy == 'yes'
+
+- name: Setting environment variables
+  template:
+    src: environment.j2
+    dest: /etc/environment
+    mode: 0755
+  when: use_proxy == 'yes'
+
+- name: Updating nameserver with organizational DNS server
+  shell: echo "nameserver {{proxy_details.organizational_dns_server}}" >> /etc/resolv.conf
+  when: use_proxy == 'yes'
+
+- name: Install kubeadm and docker
+  yum:
+      name:
+        - kubeadm
+        - docker
+      state: present
+
+- name: Starting services
+  service:
+      name: "{{ item }}"
+      enabled: yes
+      state: started
+  with_items:
+      - kubelet
+      - docker
+
+- name: Put SELinux in permissive mode, logging actions that would be blocked.
+  selinux:
+    policy: targeted
+    state: permissive
+
+- name: Check if master cluster initialization has already been done
+  stat:
+    path: /var/lib/kubelet/config.yaml
+  register: result
+
+- name: Initialize master with kubeadm init
+  command: kubeadm init
+  when: not result.stat.exists 
+
+- name: Remove .kube directory if present
+  file:
+    path: $HOME/.kube
+    state: absent
+
+- name: making .kube dir
+  file: 
+    path: $HOME/.kube
+    state: directory
+    force: yes
+
+- name: copying credentials file in .kube
+  command: cp -in /etc/kubernetes/admin.conf $HOME/.kube/config
+
+- name: Adjusting owenership
+  shell: chown $(id -u):$(id -g) $HOME/.kube/config
+  args:
+
 - name: Install kubeadm and docker
   yum:
       name:

@@ -1,0 +1,7 @@
+[Service]
+{% if proxy_details.proxy_user != '' %}
+Environment="HTTPS_PROXY=http://{{ proxy_details.proxy_user }}:{{ proxy_details.proxy_password }}@{{ proxy_details.proxy_ip }}:{{ proxy_details.proxy_port }}"
+{% elif proxy_details.proxy_user == '' %}
+Environment="HTTPS_PROXY=http://{{proxy_details.proxy_ip}}:{{proxy_details.proxy_port}}"
+{% endif %}
+Environment="NO_PROXY={{proxy_details.no_proxy}}"

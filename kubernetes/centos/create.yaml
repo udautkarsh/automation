@@ -11,6 +11,8 @@
 
 - hosts: masters
   gather_facts: false
+  vars_files:
+    - vars.yaml
   roles:
     -   master  
 
@@ -32,6 +34,8 @@
 
 - hosts: workers
   gather_facts: false
+  vars_files:
+    - vars.yaml
   roles:
     -   worker
 

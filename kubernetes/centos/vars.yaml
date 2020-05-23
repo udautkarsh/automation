@@ -1,0 +1,8 @@
+use_proxy: 'yes'
+proxy_details:
+        proxy_user: "" 
+        proxy_password: ""
+        proxy_ip: 16.85.88.10
+        proxy_port: 8080
+        no_proxy: localhost,127.0.0.1,192.168.122.0/24,lab.com
+        organizational_dns_server: 10.255.0.10
