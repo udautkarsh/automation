@@ -1,3 +1,11 @@
+
+- name: Making .ssh directory
+    file:
+      path: ~/.ssh
+      owner: root
+      group: root
+      mode: '0755'
+
 - name: Generating ssh keys  
   openssh_keypair:
     path: ~/.ssh/id_rsa
